@@ -25,9 +25,24 @@ class Post(models.Model):
 
 
 class Group(models.Model):
-    title = models.CharField(max_length=200)
-    slug = models.SlugField()
-    describtion = models.TextField()
+    title = models.CharField( 
+        'Заголовок', 
+        max_length=200, 
+        help_text='Дайте краткое название группе' 
+    ) 
+    slug = models.SlugField(
+        'Слаг', 
+        unique=True, 
+        help_text='Укажите ключ адреса страницы группы' 
+    ) 
+    describtion = models.TextField(
+        'Описание группы', 
+        help_text='Опишите группу' 
+    ) 
     
+    class Meta: 
+        verbose_name = 'Группа' 
+        verbose_name_plural = 'Группы' 
+
     def __str__(self):
         return self.title
