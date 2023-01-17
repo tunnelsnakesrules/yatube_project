@@ -21,28 +21,16 @@ class Post(models.Model):
     )
 
     def __str__(self):
-        return self.text
+        return self.text[:15]
+
+    class Meta:
+        ordering = ('pub_date',)
 
 
 class Group(models.Model):
-    title = models.CharField( 
-        'Заголовок', 
-        max_length=200, 
-        help_text='Дайте краткое название группе' 
-    ) 
-    slug = models.SlugField(
-        'Слаг', 
-        unique=True, 
-        help_text='Укажите ключ адреса страницы группы' 
-    ) 
-    describtion = models.TextField(
-        'Описание группы', 
-        help_text='Опишите группу' 
-    ) 
-    
-    class Meta: 
-        verbose_name = 'Группа' 
-        verbose_name_plural = 'Группы' 
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(null=True)
 
     def __str__(self):
         return self.title

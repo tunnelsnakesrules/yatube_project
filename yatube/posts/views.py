@@ -1,5 +1,6 @@
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Post, Group, User
 from .forms import PostForm
@@ -48,7 +49,8 @@ def profile(request, username):
     }
     return render(request, 'posts/profile.html', context)
 
-@login_required
+
+
 def post_detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     posts_count = post.author.posts.count()
@@ -60,7 +62,9 @@ def post_detail(request, post_id):
     }
     return render(request, 'posts/post_detail.html', context)
 
+
 @login_required
+@csrf_exempt
 def post_create(request):
     if request.method == 'POST':
         form = PostForm(request.POST)
@@ -74,16 +78,23 @@ def post_create(request):
     return render(request, 'posts/create_post.html', {'form': form})
 
 
+@login_required
+@csrf_exempt
 def post_edit(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    form = PostForm(request.POST, instance=post)
-    if request.method == "POST":
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.author = request.user
-            post.save()
-            return redirect('posts/post_detail.html', pk=post.pk)
-    else:
-        form = PostForm(instance=post)
-    return render(request, 'posts/create_post.html', {'form': form})
-
+    if post.author != request.user:
+        return redirect('posts:post_detail', post_id=post_id)
+    form = PostForm(
+        request.POST or None,
+        files=request.FILES or None,
+        instance=post
+    )
+    if form.is_valid():
+        form.save()
+        return redirect('posts:post_detail', post_id=post_id)
+    context = {
+        'is_edit': True,
+        'form': form,
+        'post': post,
+    }
+    return render(request, 'posts/create_post.html', context)
