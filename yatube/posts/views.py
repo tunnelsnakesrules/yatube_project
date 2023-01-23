@@ -27,7 +27,9 @@ def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     posts = Post.objects.filter(group=group).order_by('-pub_date')
     page_obj = page_look(posts, request)
+    title = f'Записи сообщества {group.title}'
     context = {
+        'title': title,
         'group': group,
         'posts': posts,
         'page_obj': page_obj,
@@ -48,7 +50,6 @@ def profile(request, username):
 
     }
     return render(request, 'posts/profile.html', context)
-
 
 
 def post_detail(request, post_id):
