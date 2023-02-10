@@ -2,7 +2,7 @@ from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Post, Group, User
+from .models import Post, Group, User, Follow
 from .forms import PostForm, CommentForm
 
 
@@ -108,10 +108,35 @@ def post_edit(request, post_id):
 
 @login_required
 def add_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
         comment.post = post
         comment.save()
-    return redirect('posts:post_detail', post_id=post_id) 
+    return redirect('posts:post_detail', post_id=post_id)
+
+@login_required
+def follow_index(request):
+    template = 'posts/follow.html'
+    posts_list = Post.objects.filter(author__following__user=request.user)
+    page = paginator_group(request, posts_list)
+    context = {"page_obj": page}
+    return render(request, template, context)
+
+
+@login_required
+def profile_follow(request, username):
+    author = get_object_or_404(User, username=username)
+    user = request.user
+    if author != user:
+        Follow.objects.get_or_create(user=user, author=author)
+    return redirect("posts:profile", username=username)
+
+
+@login_required
+def profile_unfollow(request, username):
+    user = request.user
+    Follow.objects.filter(user=user, author__username=username).delete()
+    return redirect("posts:profile", username=username)

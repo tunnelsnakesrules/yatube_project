@@ -54,3 +54,17 @@ class Comment(models.Model):
     )
     text = models.TextField()  
     created = models.DateTimeField(auto_now_add=True)
+
+
+class Follow(models.Model):
+    user = models.ForeignKey(User, related_name='follower',
+                             on_delete=models.CASCADE)
+    author = models.ForeignKey(User, related_name='following',
+                               on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ('-author',)
+        verbose_name = 'Лента автора'
+        verbose_name_plural = 'Лента авторов'
+        constraints = [models.UniqueConstraint(
+            fields=['user', 'author'], name='unique_members')]
